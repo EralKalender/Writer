@@ -107,22 +107,28 @@ GENRES = ["Romantik", "Krimi", "Action", "Horror", "Drama", "Sci-Fi", "Fantasy"]
 def extract_text_from_pdf(pdf_file):
     """Extrahiert Text aus hochgeladener PDF"""
     try:
-        pdf_reader = PyPDF2.PdfReader(BytesIO(pdf_file.read()))
+        # Datei-Inhalt als Bytes lesen
+        pdf_bytes = pdf_file.read()
+
+        # PDF Reader mit den Bytes initialisieren
+        pdf_reader = PyPDF2.PdfReader(BytesIO(pdf_bytes))
         text = ""
         for page in pdf_reader.pages:
-            text += page.extract_text() + "\n"
+            extracted = page.extract_text()
+            if extracted:
+                text += extracted + "\n"
+
+        if not text.strip():
+            st.warning("⚠️ PDF enthält keinen extrahierbaren Text.")
+            return ""
+
         return text[:5000]  # Max 5000 Zeichen
     except Exception as e:
-        st.error(f"Fehler beim Lesen der PDF: {e}")
+        st.error(f"❌ Fehler beim Lesen der PDF: {e}")
         return ""
 
 
 def generate_agent_response(agent_name, user_question, context, genre, chat_history):
-    """
-    Generiert Agent-Antwort
-    WICHTIG: Hier muss eine echte API integriert werden (Claude, OpenAI, etc.)
-    Dies ist eine Platzhalter-Funktion für die Demo
-    """
     agent_info = AGENTS[agent_name]
 
     api_key = os.getenv('ANTHROPIC_API_KEY')
